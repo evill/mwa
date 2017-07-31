@@ -1,0 +1,36 @@
+{
+  "name": "mwa",
+  "version": "0.0.0",
+  "description": "Modular Web Application",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/evill/mwa.git"
+  },
+  "keywords": [
+    "Modular",
+    "Web",
+    "Application"
+  ],
+  "author": "Igor Tretyakov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/evill/mwa/issues"
+  },
+  "homepage": "https://github.com/evill/mwa#readme",
+  "dependencies": {
+    "ioc": "git@github.com:evill/IoC.git"
+  },
+  "devDependencies": {
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-decorators": "^6.24.1",
+    "babel-polyfill": "^6.23.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-register": "^6.24.1",
+    "chai": "~4.1.0",
+    "mocha": "^3.4.2"
+  }
+}
