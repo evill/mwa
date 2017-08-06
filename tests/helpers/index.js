@@ -1,4 +1,5 @@
 require('babel-polyfill');
+
 var chai = require('chai');
 
 //chai.config.includeStack = true;
