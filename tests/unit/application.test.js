@@ -1,6 +1,5 @@
 import Application from '../../lib/application';
-import { iocClass, iocFunction } from '../../lib/resource/registrars';
-import { IoCContainer } from 'ioc';
+import { iocClass, iocFunc } from 'ioc';
 
 class ConfigModule {
     static $resources = {
@@ -18,7 +17,7 @@ function consoleFactory () {
 
 class ConsoleModule {
     static $resources = {
-        console: iocFunction(consoleFactory)
+        console: iocFunc(consoleFactory).asSingleton()
     };
 }
 
@@ -38,7 +37,7 @@ class Logger {
 class LoggerModule {
     static $dependencies = ['ConfigModule', 'ConsoleModule'];
     static $resources = {
-        logger: iocClass(Logger)
+        logger: iocClass(Logger).asSingleton()
     };
 }
 
