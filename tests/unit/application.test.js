@@ -1,12 +1,20 @@
 import Application from '../../lib/application';
-import { iocClass, iocFunc } from 'ioc';
+import { iocClass, iocFactory } from 'ioc';
 
-class ConfigModule {
-    static $resources = {
-        config: {
-            logPrefix: "MVA"
-        }
-    };
+import { ConfigurationError, RunningError } from '../fixtures/errors.dummy';
+import {
+    LazyModuleStub,
+    LazyFailedConfigurationModule,
+    LazyFailedRunModule
+} from '../fixtures/lazy-module.stub';
+import { ModuleStub } from '../fixtures/module.stub';
+
+export let config = {
+    logPrefix: "MVA"
+};
+
+export class ConfigModule {
+    static $resources = { config };
 }
 
 function consoleFactory () {
@@ -17,7 +25,7 @@ function consoleFactory () {
 
 class ConsoleModule {
     static $resources = {
-        console: iocFunc(consoleFactory).asSingleton()
+        console: iocFactory(consoleFactory).asSingleton()
     };
 }
 
@@ -41,21 +49,22 @@ class LoggerModule {
     };
 }
 
-class MainModule {
+class MainService {
+
+    static $inject = ['config', 'logger'];
+
+    constructor(config, logger) {
+        this.config = config;
+        this.logger = logger;
+    }
+}
+
+class MainModule  extends ModuleStub {
     static $dependencies = ['ConfigModule', 'LoggerModule'];
-    
-    constructor() {
-        this.configured = false;
-        this.runing = false;
-    }
-    
-    configure(ioc) {
-        this.configured = true;
-        this.ioc = ioc;
-    }
-    run() {
-        this.runing = true;
-    }
+
+    static $resources = {
+      mainService: iocClass(MainService)
+    };
 }
 
 describe('Application class', function () {
@@ -114,28 +123,73 @@ describe('Application class', function () {
             it('should wait until custom configuration of module will not resolve promise', function (done) {
                 var app = new Application();
 
-                let LazyModule = class {
-                    constructor() {
-                        this.configured = false;
-                    }
-                    configure() {
-                        return new Promise((resolve) => {
-                            setTimeout(() => {
-                                this.configured = true;
-                                resolve();
-                            }, 1000)
-                        });
-                    }
-                };
-
-                app.module(LazyModule).run().then(
+                app.module(LazyModuleStub).run().then(
                     (app) => {
-                        let mainModule = app.moduleInstance('LazyModule');
+                        let mainModule = app.moduleInstance('LazyModuleStub');
 
                         expect(mainModule.configured).to.be.true;
                         done();
                     }
                 ).catch(done);
+            });
+
+            it('should fail application run in case if some module fails configuration', function (done) {
+                var app = new Application();
+
+                app.module(LazyFailedConfigurationModule).run().then(
+                    () => {
+                        done(new Error("Application with failed module configuration successfully ran!"));
+                    }
+                ).catch(
+                    (error) => {
+                        expect(error).to.equal(ConfigurationError);
+                        done();
+                    }
+                );
+            });
+
+            describe('creates module ioc container which', function () {
+                it('should provide access to module own resources', function (done) {
+                    this.app.run().then(
+                        (app) => {
+                            let { ioc } = app.moduleInstance('MainModule');
+                            let mainService = ioc.resolve('mainService');
+
+                            expect(mainService).to.be.instanceOf(MainService);
+                            expect(mainService.config).to.equal(config);
+                            expect(mainService.logger).to.be.instanceOf(Logger);
+
+                            done();
+                        }
+                    ).catch(done);
+                });
+
+                it('should provide access to module dependencies resource', function (done) {
+                    this.app.run().then(
+                        (app) => {
+                            let { ioc } = app.moduleInstance('MainModule');
+                            let config = ioc.resolve('config');
+                            let logger = ioc.resolve('logger');
+
+                            expect(config).to.equal(config);
+                            expect(logger).to.be.instanceOf(Logger);
+
+                            done();
+                        }
+                    ).catch(done);
+                });
+
+                it('should not provide access to resource of not own dependencies', function (done) {
+                    this.app.run().then(
+                        (app) => {
+                            let { ioc } = app.moduleInstance('MainModule');
+
+                            expect(ioc.has('console')).to.be.false;
+
+                            done();
+                        }
+                    ).catch(done);
+                });
             });
         });
 
@@ -146,11 +200,62 @@ describe('Application class', function () {
                     (app) => {
                         let mainModule = app.moduleInstance('MainModule');
 
-                        expect(mainModule.runing).to.be.true;
+                        expect(mainModule.running).to.be.true;
                         done();
                     }
                 ).catch(done);
             });
+
+            it('should wait until custom running of module will not resolve promise', function (done) {
+                var app = new Application();
+
+                app.module(LazyModuleStub).run().then(
+                    (app) => {
+                        let module = app.moduleInstance('LazyModuleStub');
+                        expect(module.running).to.be.true;
+                        done();
+                    }
+                ).catch(done);
+            });
+
+            it('should fail application run in case if some module fails run', function (done) {
+                var app = new Application();
+
+                app.module(LazyFailedRunModule).run().then(
+                    () => {
+                        done(new Error("Application with failed module run successfully ran!"));
+                    }
+                ).catch(
+                    (error) => {
+                        expect(error).to.equal(RunningError);
+                        done();
+                    }
+                );
+            });
+        });
+    });
+    
+    describe('with shared resource', function () {
+
+        it('should provide access for all modules to use shared resources', function (done) {
+            const SOME_ENVIRONMENT_DATA = {
+                RAW_CONFIG: {},
+                INITIAL_STATE: {}
+            };
+
+            let app = new Application({
+                resources: { SOME_ENVIRONMENT_DATA }
+            });
+
+            app.module(ModuleStub).run().then(
+                (app) => {
+                    let { ioc } = app.moduleInstance('ModuleStub');
+
+                    expect(ioc.resolve('SOME_ENVIRONMENT_DATA')).to.equal(SOME_ENVIRONMENT_DATA);
+                    done();
+                }
+            ).catch(done);
         });
     });
 });
+
