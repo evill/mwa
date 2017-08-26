@@ -1,4 +1,4 @@
-import Application from '../../lib/application';
+import Application from '../../src/application';
 import { iocClass, iocFactory } from 'ioc';
 
 import { ConfigurationError, RunningError } from '../fixtures/errors.dummy';

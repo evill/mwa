@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "postinstall": "cd node_modules/ioc && npm install && npm run build",
-    "test": "mocha --require ./tests/helpers --compilers js:babel-register --ui bdd tests/unit/**/*.js tests/unit/*.js"
+    "test": "mocha --require ./tests/helpers --compilers js:babel-register --ui bdd tests/unit/**/*.js tests/unit/*.js",
     "build": "babel src -d lib",
     "build:w": "npm run build -- -w"
   },
@@ -28,6 +28,7 @@
     "ioc": "https://github.com/evill/IoC.git"
   },
   "devDependencies": {
+    "babel-cli": "^6.24.1",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-decorators": "^6.24.1",
     "babel-polyfill": "^6.23.0",
