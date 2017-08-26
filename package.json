@@ -1,11 +1,13 @@
 {
   "name": "mwa",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Modular Web Application",
   "main": "lib/index.js",
   "scripts": {
     "postinstall": "cd node_modules/ioc && npm install && npm run build",
     "test": "mocha --require ./tests/helpers --compilers js:babel-register --ui bdd tests/unit/**/*.js tests/unit/*.js"
+    "build": "babel src -d lib",
+    "build:w": "npm run build -- -w"
   },
   "repository": {
     "type": "git",
