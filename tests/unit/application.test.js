@@ -15,6 +15,8 @@ export let config = {
 
 export class ConfigModule {
     static $resources = { config };
+    
+    static $moduleName = 'ConfigModule';
 }
 
 function consoleFactory () {
@@ -27,6 +29,8 @@ class ConsoleModule {
     static $resources = {
         console: iocFactory(consoleFactory).asSingleton()
     };
+
+    static $moduleName = 'ConsoleModule';
 }
 
 class Logger {
@@ -47,6 +51,7 @@ class LoggerModule {
     static $resources = {
         logger: iocClass(Logger).asSingleton()
     };
+    static $moduleName = 'LoggerModule';
 }
 
 class MainService {
@@ -59,12 +64,14 @@ class MainService {
     }
 }
 
-class MainModule  extends ModuleStub {
+class MainModule extends ModuleStub {
     static $dependencies = ['ConfigModule', 'LoggerModule'];
 
     static $resources = {
       mainService: iocClass(MainService)
     };
+
+    static $moduleName = 'MainModule';
 }
 
 describe('Application class', function () {

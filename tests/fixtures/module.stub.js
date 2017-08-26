@@ -1,4 +1,6 @@
 export class ModuleStub {
+    static $moduleName = 'ModuleStub';
+
     constructor() {
         this.configured = false;
         this.running = false;
